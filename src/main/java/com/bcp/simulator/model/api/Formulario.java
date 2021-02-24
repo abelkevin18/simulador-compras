@@ -11,8 +11,9 @@ public class Formulario {
   private String dni;
   private String tarjeta;
   private String moneda;
-  private Double monto;
-  private Integer cuota;
-  private Double tea;
+  private String monto;
+  private String cuota;
+  private String tea;
   private String diaPago;
+  private String fechaPago;
 }

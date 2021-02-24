@@ -16,6 +16,9 @@ public class Tarjeta {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
+  @Column(name = "tipo_tarjeta")
+  private String tipoTarjeta;
+
   @Column(name = "numero_tarjeta")
   private Integer numeroTarjeta;
 

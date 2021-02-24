@@ -2,12 +2,14 @@ package com.bcp.simulator.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@ToString
 @Entity
 @Table(schema = "fnel", name = "cliente")
 public class Cliente {

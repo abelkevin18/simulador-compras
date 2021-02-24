@@ -3,11 +3,13 @@ package com.bcp.simulator.model.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
+@ToString
 @Entity
 @Table(schema = "fnel", name = "producto")
 public class Producto {
@@ -32,6 +34,8 @@ public class Producto {
   private Integer codigoProducto;
 
   private Double tea;
+
+  private String moneda;
 
 
 }

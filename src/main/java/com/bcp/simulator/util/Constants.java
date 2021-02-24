@@ -5,9 +5,10 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Constants {
-  public static final List<String> CARDS_TYPE = getCardsType();
+  public static final List<String> CURRENCY_TYPE = getCardsType();
 
   private static List<String> getCardsType() {
-    return new ArrayList<>(Arrays.asList("CLASICA", "ORO", "BLACK"));
+    return new ArrayList<>(Arrays.asList("SOLES", "DOLARES"));
   }
+
 }

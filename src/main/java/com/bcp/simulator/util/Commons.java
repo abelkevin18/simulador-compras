@@ -36,4 +36,29 @@ public class Commons {
       return false;
     }
   }
+
+  public static boolean isValidAmount(Double value) {
+    if (value > 0.0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean isValidQuota(Integer value) {
+    if (value > 0 && value <= 36) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public static boolean isValidTea(Double value) {
+    if (value > 0.0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
 }
