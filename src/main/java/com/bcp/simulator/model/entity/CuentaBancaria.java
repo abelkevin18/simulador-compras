@@ -4,12 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(schema = "fnel", name = "cuenta_bancaria")
+@Table(name = "cuenta_bancaria")
 public class CuentaBancaria {
 
   @Id
@@ -17,7 +18,7 @@ public class CuentaBancaria {
   private Integer id;
 
   @Column(name = "numero_cuenta")
-  private Integer numeroCuenta;
+  private BigInteger numeroCuenta;
 
   @Column(name = "fecha_apertura")
   private LocalDateTime fechaApertura;

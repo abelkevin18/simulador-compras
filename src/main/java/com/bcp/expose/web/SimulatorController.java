@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.text.ParseException;
 
 @RestController
-@RequestMapping("/producto")
+@RequestMapping("/simulador")
 @Slf4j
 public class SimulatorController {
 
   @Autowired
   private ShoppingSimulatorService simulatorService;
 
-  @PostMapping(value = "/simulador", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
+  @PostMapping(value = "/cuotas", produces = MediaType.APPLICATION_STREAM_JSON_VALUE)
   public ResponseBody simulator(@RequestBody Formulario body) throws ParseException {
 
     return simulatorService.simulatorProcess(body);

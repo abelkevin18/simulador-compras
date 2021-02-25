@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Setter
 @ToString
 @Entity
-@Table(schema = "fnel", name = "producto")
+@Table(name = "producto")
 public class Producto {
 
   @Id

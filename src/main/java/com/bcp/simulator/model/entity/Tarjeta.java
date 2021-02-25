@@ -4,12 +4,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(schema = "fnel", name = "tarjeta")
+@Table(name = "tarjeta")
 public class Tarjeta {
 
   @Id
@@ -20,7 +21,7 @@ public class Tarjeta {
   private String tipoTarjeta;
 
   @Column(name = "numero_tarjeta")
-  private Integer numeroTarjeta;
+  private BigInteger numeroTarjeta;
 
   @Column(name = "fecha_expiracion")
   private LocalDateTime fechaExpiracion;
