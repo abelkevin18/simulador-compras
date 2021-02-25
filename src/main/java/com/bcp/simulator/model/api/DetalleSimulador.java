@@ -11,4 +11,5 @@ public class DetalleSimulador {
   private String numeroCuota;
   private String montoCuota;
   private String moneda;
+  private String fechaPagoCuota;
 }

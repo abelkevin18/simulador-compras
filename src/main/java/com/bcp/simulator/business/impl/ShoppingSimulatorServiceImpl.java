@@ -180,14 +180,14 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       isValidRequest = false;
     }
 
-    //String localFechaCompra = null;
+    LocalDate localFechaCompra = null;
 
     if (StringUtils.isNotBlank(request.getFechaCompra())) {
       if (Commons.isDate(request.getFechaCompra())) {
         Calendar calendar = Calendar.getInstance();
         //LocalDate localFechaCompra = LocalDate.parse(request.getFechaCompra());
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
-        LocalDate localFechaCompra = LocalDate.parse(request.getFechaCompra(), formatter);
+        localFechaCompra = LocalDate.parse(request.getFechaCompra(), formatter);
         log.info("Fecha actual: " + calendar.get(Calendar.YEAR)+"/"+ (calendar.get(Calendar.MONTH) + 1)+ "/"+ calendar.get(Calendar.DATE));
         LocalDate fechaActual = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE));
 
@@ -215,18 +215,32 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
 
     //calculo de las cuotas
 
-    Double primeraCuota = Commons.calcularImporteMensual(tea,  cuota, monto);
-    DetalleSimulador detalleSimulador = new DetalleSimulador();
-    detalleSimulador.setMoneda(moneda);
-    detalleSimulador.setNumeroCuota(cuota.toString());
-    detalleSimulador.setMontoCuota(primeraCuota.toString());
+    Double cuotaMensual = Commons.calcularImporteMensual(tea,  cuota, monto);
+
+    cuotaMensual = Math.round(cuotaMensual * 100d) / 100d;
+    List<DetalleSimulador> detalles = new ArrayList<>();
+
+    for (Integer i = 1; i <= cuota; i++) {
+      LocalDate fechaCuota = LocalDate.of(localFechaCompra.getYear(), localFechaCompra.getMonthValue(), diaPago)
+              .plusMonths(i);
+
+      DetalleSimulador detalleSimulador = new DetalleSimulador();
+      detalleSimulador.setMoneda(moneda);
+      detalleSimulador.setNumeroCuota(i.toString());
+      detalleSimulador.setMontoCuota(cuotaMensual.toString());
+      detalleSimulador.setFechaPagoCuota(fechaCuota.toString());
+
+      detalles.add(detalleSimulador);
+    }
+
+
     mensajes.add("Se procesó la información correctamente.");
     mensajes.add("Cuotas INCLUYEN ITF del 0.005%");
     mensajes.add("Cuotas NO incluyen seguro de Desgravamen ni multas");
 
     responseBody.setMensajes(mensajes);
     responseBody.setEstado("EXITOSO");
-    responseBody.setDetalles(Arrays.asList(detalleSimulador));
+    responseBody.setDetalles(detalles);
     return  responseBody;
   }
 
