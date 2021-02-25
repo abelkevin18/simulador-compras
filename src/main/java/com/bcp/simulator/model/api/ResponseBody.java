@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @ToString
 public class ResponseBody {
-  private String codigo;
+  private String estado;
   private List<String> mensajes;
   private List<DetalleSimulador> detalles;
 

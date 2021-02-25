@@ -1,14 +1,7 @@
 package com.bcp.simulator.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 public class Constants {
-  public static final List<String> CURRENCY_TYPE = getCardsType();
-
-  private static List<String> getCardsType() {
-    return new ArrayList<>(Arrays.asList("SOLES", "DOLARES"));
-  }
-
+  public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 }

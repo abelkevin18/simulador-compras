@@ -15,5 +15,5 @@ public class Formulario {
   private String cuota;
   private String tea;
   private String diaPago;
-  private String fechaPago;
+  private String fechaCompra;
 }
