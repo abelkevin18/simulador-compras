@@ -6,6 +6,7 @@ import com.bcp.simulator.dao.ProductoRepository;
 import com.bcp.simulator.model.api.DetalleSimulador;
 import com.bcp.simulator.model.api.Formulario;
 import com.bcp.simulator.model.api.ResponseBody;
+import com.bcp.simulator.model.api.simulator.SimulatorOperator;
 import com.bcp.simulator.model.entity.Cliente;
 import com.bcp.simulator.model.entity.Producto;
 import com.bcp.simulator.util.Commons;
@@ -41,7 +42,60 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
     ResponseBody responseBody = new ResponseBody();
     List<String> mensajes = new ArrayList<>();
 
+    SimulatorOperator operator = validateRequest(request, mensajes);
+
+    if (!operator.isValidRequest()) {
+      responseBody.setMensajes(mensajes);
+      responseBody.setEstado(Constants.MSG_ERROR_STATUS);
+    } else {
+      responseBody = calculateQuotas(operator, mensajes);
+    }
+    return  responseBody;
+  }
+
+  private ResponseBody calculateQuotas(SimulatorOperator operator, List<String> mensajes) {
+    ResponseBody responseBody = new ResponseBody();
+
+    Double cuotaMensual = Commons
+            .calcularImporteMensual(operator.getTea(),  operator.getCuota(), operator.getMonto());
+
+    cuotaMensual = Math.round(cuotaMensual * 100d) / 100d;
+    List<DetalleSimulador> detalles = new ArrayList<>();
+
+    for (Integer i = 1; i <= operator.getCuota(); i++) {
+      LocalDate fechaCuota = LocalDate
+              .of(operator.getFechaCompra().getYear()
+                      , operator.getFechaCompra().getMonthValue()
+                      , operator.getDiaPago())
+              .plusMonths(i);
+
+      DetalleSimulador detalleSimulador = new DetalleSimulador();
+      detalleSimulador.setMoneda(operator.getMoneda());
+      detalleSimulador.setNumeroCuota(i.toString());
+      detalleSimulador.setMontoCuota(cuotaMensual.toString());
+      detalleSimulador.setFechaPagoCuota(fechaCuota.toString());
+
+      detalles.add(detalleSimulador);
+    }
+
+
+    mensajes.add(Constants.MSG_SUCCESS_PROCESS);
+    mensajes.add(Constants.MSG_SUCCESS_DETAIL1);
+    mensajes.add(Constants.MSG_SUCCESS_DETAIL2);
+
+    responseBody.setMensajes(mensajes);
+    responseBody.setEstado(Constants.MSG_SUCCESS_STATUS);
+    responseBody.setDetalles(detalles);
+
+    return responseBody;
+  }
+
+
+  private SimulatorOperator validateRequest(Formulario request, List<String> mensajes) {
+
+    SimulatorOperator data = new SimulatorOperator();
     boolean isValidRequest = true;
+
     List<Producto> productos = new ArrayList<>();
     if (StringUtils.isNotBlank(request.getDni())) {
       if (Commons.isValidDni(request.getDni())) {
@@ -72,9 +126,8 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
 
 
     if (!isValidRequest) {
-      responseBody.setMensajes(mensajes);
-      responseBody.setEstado(Constants.MSG_ERROR_STATUS);
-      return responseBody;
+      data.setValidRequest(isValidRequest);
+      return data;
     }
 
     Producto producto = null;
@@ -183,17 +236,17 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       isValidRequest = false;
     }
 
-    LocalDate localFechaCompra = null;
+    LocalDate fechaCompra = null;
 
     if (StringUtils.isNotBlank(request.getFechaCompra())) {
       if (Commons.isDate(request.getFechaCompra())) {
         Calendar calendar = Calendar.getInstance();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.FORMAT_DATE);
-        localFechaCompra = LocalDate.parse(request.getFechaCompra(), formatter);
+        fechaCompra = LocalDate.parse(request.getFechaCompra(), formatter);
         log.info("Fecha actual: " + calendar.get(Calendar.YEAR)+"/"+ (calendar.get(Calendar.MONTH) + 1)+ "/"+ calendar.get(Calendar.DATE));
         LocalDate fechaActual = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE));
 
-        if (fechaActual.compareTo(localFechaCompra) > 0) {
+        if (fechaActual.compareTo(fechaCompra) > 0) {
           mensajes.add(Constants.MSG_INVALID_PURCHASE_DATE);
           isValidRequest = false;
         }
@@ -207,41 +260,16 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       isValidRequest = false;
     }
 
-    if (!isValidRequest) {
-      responseBody.setMensajes(mensajes);
-      responseBody.setEstado(Constants.MSG_ERROR_STATUS);
-      return responseBody;
-    }
+    data.setValidRequest(isValidRequest);
+    data.setCuota(cuota);
+    data.setMonto(monto);
+    data.setTea(tea);
+    data.setFechaCompra(fechaCompra);
+    data.setDiaPago(diaPago);
+    data.setMoneda(moneda);
 
-    //calculo de las cuotas
-
-    Double cuotaMensual = Commons.calcularImporteMensual(tea,  cuota, monto);
-
-    cuotaMensual = Math.round(cuotaMensual * 100d) / 100d;
-    List<DetalleSimulador> detalles = new ArrayList<>();
-
-    for (Integer i = 1; i <= cuota; i++) {
-      LocalDate fechaCuota = LocalDate.of(localFechaCompra.getYear(), localFechaCompra.getMonthValue(), diaPago)
-              .plusMonths(i);
-
-      DetalleSimulador detalleSimulador = new DetalleSimulador();
-      detalleSimulador.setMoneda(moneda);
-      detalleSimulador.setNumeroCuota(i.toString());
-      detalleSimulador.setMontoCuota(cuotaMensual.toString());
-      detalleSimulador.setFechaPagoCuota(fechaCuota.toString());
-
-      detalles.add(detalleSimulador);
-    }
-
-
-    mensajes.add(Constants.MSG_SUCCESS_PROCESS);
-    mensajes.add(Constants.MSG_SUCCESS_DETAIL1);
-    mensajes.add(Constants.MSG_SUCCESS_DETAIL2);
-
-    responseBody.setMensajes(mensajes);
-    responseBody.setEstado(Constants.MSG_SUCCESS_STATUS);
-    responseBody.setDetalles(detalles);
-    return  responseBody;
+    return data;
   }
+
 
 }
