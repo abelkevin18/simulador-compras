@@ -1,0 +1,17 @@
+package com.bcp.simulator.model.api;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.util.List;
+
+@Getter
+@Setter
+@ToString
+public class ResponseBody {
+  private String estado;
+  private List<String> mensajes;
+  private List<DetalleSimulador> detalles;
+
+}
