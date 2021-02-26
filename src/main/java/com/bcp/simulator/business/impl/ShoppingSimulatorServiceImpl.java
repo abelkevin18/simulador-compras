@@ -42,7 +42,7 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
     List<String> mensajes = new ArrayList<>();
 
     boolean isValidRequest = true;
-    List<Producto> productos = null;
+    List<Producto> productos = new ArrayList<>();
     if (StringUtils.isNotBlank(request.getDni())) {
       if (Commons.isValidDni(request.getDni())) {
         Optional<Cliente> clienteOpt = clienteRepository.findByDni(request.getDni());
@@ -62,11 +62,6 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       isValidRequest = false;
     }
 
-    if (!isValidRequest) {
-      responseBody.setMensajes(mensajes);
-      return responseBody;
-    }
-
     String tarjeta = null;
     if (StringUtils.isNotBlank(request.getTarjeta())) {
       tarjeta = request.getTarjeta();
@@ -75,9 +70,16 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       isValidRequest = false;
     }
 
+
+    if (!isValidRequest) {
+      responseBody.setMensajes(mensajes);
+      responseBody.setEstado(Constants.MSG_ERROR_STATUS);
+      return responseBody;
+    }
+
     Producto producto = null;
 
-    if (productos != null && tarjeta != null) {
+    if (!productos.isEmpty() && tarjeta != null) {
       for (Producto p: productos) {
         if (p.getTarjeta().getTipoTarjeta().toUpperCase()
                 .equals(request.getTarjeta().toUpperCase())) {
