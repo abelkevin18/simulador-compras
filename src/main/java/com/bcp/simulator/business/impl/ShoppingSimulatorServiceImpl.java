@@ -9,18 +9,20 @@ import com.bcp.simulator.model.api.ResponseBody;
 import com.bcp.simulator.model.entity.Cliente;
 import com.bcp.simulator.model.entity.Producto;
 import com.bcp.simulator.util.Commons;
+import com.bcp.simulator.util.Constants;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -41,7 +43,6 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
 
     boolean isValidRequest = true;
     List<Producto> productos = null;
-    //boolean validDni = true;
     if (StringUtils.isNotBlank(request.getDni())) {
       if (Commons.isValidDni(request.getDni())) {
         Optional<Cliente> clienteOpt = clienteRepository.findByDni(request.getDni());
@@ -49,15 +50,15 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
           Cliente cliente = clienteOpt.get();
           productos = productoRepository.findByIdCliente(cliente.getId()).collect(Collectors.toList());
         } else {
-          mensajes.add("Usted aún no es parte de la familia BCP");
+          mensajes.add(Constants.MSG_CLIENT_DOES_NOT_EXIST);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("El número de dni debe tener dígitos y de tamaño 8");
+        mensajes.add(Constants.MSG_INVALID_DNI);
         isValidRequest = false;
       }
     } else {
-      mensajes.add("El número de dni no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_DNI);
       isValidRequest = false;
     }
 
@@ -70,7 +71,7 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
     if (StringUtils.isNotBlank(request.getTarjeta())) {
       tarjeta = request.getTarjeta();
     } else {
-      mensajes.add("La TARJETA no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_CREDIT_CARD);
       isValidRequest = false;
     }
 
@@ -78,16 +79,17 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
 
     if (productos != null && tarjeta != null) {
       for (Producto p: productos) {
-        if (p.getTarjeta().getTipoTarjeta().equals(request.getTarjeta())) {
+        if (p.getTarjeta().getTipoTarjeta().toUpperCase()
+                .equals(request.getTarjeta().toUpperCase())) {
           producto = p;
         }
       }
       if (producto == null) {
-        mensajes.add("Valor de la TARJETA inválida");
+        mensajes.add(Constants.MSG_INVALID_CREDIT_CARD);
         isValidRequest = false;
       }
     } else {
-      mensajes.add("Usted no dispone de ninguna TARJETA");
+      mensajes.add(Constants.MSG_DONT_HAVE_ANY_CREDIT_CARD);
       isValidRequest = false;
     }
 
@@ -97,11 +99,11 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       if (StringUtils.isNotBlank(request.getMoneda())) {
         moneda = request.getMoneda();
         if (!moneda.equals(producto.getMoneda())) {
-          mensajes.add("La MONEDA no está asociada al producto");
+          mensajes.add(Constants.MSG_CURRENCY_NO_ASSOCIATE_PRODUCT);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("La MONEDA no debe ser un valor vacio");
+        mensajes.add(Constants.MSG_EMPTY_CURRENCY);
         isValidRequest = false;
       }
 
@@ -110,19 +112,19 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
           tea = Double.parseDouble(request.getTea());
           if (Commons.isValidTea(tea)) {
             if (!tea.equals(producto.getTea())) {
-              mensajes.add("La TEA no está asociada al producto");
+              mensajes.add(Constants.MSG_TEA_NO_ASSOCIATE_PRODUCT);
               isValidRequest = false;
             }
           } else {
-            mensajes.add("La TEA debe ser positivo y mayor a 0.00");
+            mensajes.add(Constants.MSG_INVALID_TEA_1);
             isValidRequest = false;
           }
         } else {
-          mensajes.add("La TEA debe ser un número decimal");
+          mensajes.add(Constants.MSG_INVALID_TEA_2);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("La TEA no debe ser un valor vacio");
+        mensajes.add(Constants.MSG_EMPTY_TEA);
         isValidRequest = false;
       }
     }
@@ -132,15 +134,15 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       if (Commons.isDecimal(request.getMonto())) {
         monto = Double.parseDouble(request.getMonto());
         if (!Commons.isValidAmount(monto)) {
-          mensajes.add("El monto debe ser positivo y mayor a 0.00");
+          mensajes.add(Constants.MSG_INVALID_AMOUNT_1);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("El monto debe ser un número decimal");
+        mensajes.add(Constants.MSG_INVALID_AMOUNT_2);
         isValidRequest = false;
       }
     } else {
-      mensajes.add("El monto no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_AMOUNT);
       isValidRequest = false;
     }
 
@@ -149,18 +151,17 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       if (Commons.isInteger(request.getCuota())) {
         cuota = Integer.parseInt(request.getCuota());
         if (!Commons.isValidQuota(cuota)) {
-          mensajes.add("La cuota debe ser mayor a cero y un máximo de 36");
+          mensajes.add(Constants.MSG_INVALID_QUOTA_1);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("La cuota debe ser un número entero");
+        mensajes.add(Constants.MSG_INVALID_QUOTA_2);
         isValidRequest = false;
       }
     } else {
-      mensajes.add("La cuota no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_QUOTA);
       isValidRequest = false;
     }
-
 
     Integer diaPago = null;
 
@@ -168,15 +169,15 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
       if (Commons.isInteger(request.getDiaPago())) {
         diaPago = Integer.parseInt(request.getDiaPago());
         if (!Commons.isValidPaymentDate(diaPago)) {
-          mensajes.add("El día de pago debe ser igual o mayor a uno y un máximo de 30");
+          mensajes.add(Constants.MSG_INVALID_PAYMENT_DAY_1);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("El día de pago debe ser un número entero");
+        mensajes.add(Constants.MSG_INVALID_PAYMENT_DAY_2);
         isValidRequest = false;
       }
     } else {
-      mensajes.add("El día de pago no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_PAYMENT_DAY);
       isValidRequest = false;
     }
 
@@ -185,31 +186,28 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
     if (StringUtils.isNotBlank(request.getFechaCompra())) {
       if (Commons.isDate(request.getFechaCompra())) {
         Calendar calendar = Calendar.getInstance();
-        //LocalDate localFechaCompra = LocalDate.parse(request.getFechaCompra());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(Constants.FORMAT_DATE);
         localFechaCompra = LocalDate.parse(request.getFechaCompra(), formatter);
         log.info("Fecha actual: " + calendar.get(Calendar.YEAR)+"/"+ (calendar.get(Calendar.MONTH) + 1)+ "/"+ calendar.get(Calendar.DATE));
         LocalDate fechaActual = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE));
 
-        if (fechaActual.compareTo(localFechaCompra) <= 0) {
-
-        } else {
-          mensajes.add("La fecha de compra debe ser igual o mayor a la fecha actual");
+        if (fechaActual.compareTo(localFechaCompra) > 0) {
+          mensajes.add(Constants.MSG_INVALID_PURCHASE_DATE);
           isValidRequest = false;
         }
       } else {
-        mensajes.add("La fecha de pago no tiene el formato yyyy/MM/dd");
+        mensajes.add(Constants.MSG_INVALID_FORMAT_PURCHASE_DATE);
         isValidRequest = false;
       }
 
     } else {
-      mensajes.add("La fecha de pago no debe ser un valor vacío");
+      mensajes.add(Constants.MSG_EMPTY_PURCHASE_DATE);
       isValidRequest = false;
     }
 
     if (!isValidRequest) {
       responseBody.setMensajes(mensajes);
-      responseBody.setEstado("ERROR");
+      responseBody.setEstado(Constants.MSG_ERROR_STATUS);
       return responseBody;
     }
 
@@ -234,12 +232,12 @@ public class ShoppingSimulatorServiceImpl implements ShoppingSimulatorService {
     }
 
 
-    mensajes.add("Se procesó la información correctamente.");
-    mensajes.add("Cuotas INCLUYEN ITF del 0.005%");
-    mensajes.add("Cuotas NO incluyen seguro de Desgravamen ni multas");
+    mensajes.add(Constants.MSG_SUCCESS_PROCESS);
+    mensajes.add(Constants.MSG_SUCCESS_DETAIL1);
+    mensajes.add(Constants.MSG_SUCCESS_DETAIL2);
 
     responseBody.setMensajes(mensajes);
-    responseBody.setEstado("EXITOSO");
+    responseBody.setEstado(Constants.MSG_SUCCESS_STATUS);
     responseBody.setDetalles(detalles);
     return  responseBody;
   }
